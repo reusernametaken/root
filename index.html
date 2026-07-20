@@ -17,6 +17,44 @@
                                 is the reusable per-page "frame" --
                                 same block goes on every sibling page,
                                 just swap the accent color + wordmark.
+                                Bisection lives on .flag-emblem, a
+                                300x200 (3:2) patch centered on the
+                                banner rather than stretched across its
+                                full width -- styled after the anarcho-
+                                transhumanist flag: lower-hoist-to-
+                                upper-fly diagonal, accent color upper-
+                                left / black lower-right, drawn with
+                                "to bottom right" rather than a fixed
+                                angle so it's a true corner-to-corner
+                                line off the emblem's own true 3:2
+                                proportions, fimbriated in 1px white --
+                                4px on the hoist (left) edge specifically,
+                                standing in for a real flag's "header"/
+                                "heading", the reinforced sleeve sewn
+                                along the hoist for mounting to a pole.
+                                .flag itself is solid black outside it.
+                                .flag-stars is a JS-scattered field of
+                                .star dots layered over both (z-index:1,
+                                under the wordmark/arrows at z-index:2,
+                                over the emblem at z-index:0), rotating
+                                one full turn per sidereal day -- see
+                                the CSS and script for all three layers.
+    0. .top-stars            -- a second, wider starfield living at the
+                                top of <body>, outside .page-shell
+                                entirely, spanning the full page width
+                                at the flag's own height so the effect
+                                splays across the mesh-banner/margin-
+                                banner peek cards and out to the
+                                viewport edges too, not just the 640px
+                                banner. Placed before .page-shell in
+                                the DOM so .flag-wrap's own content
+                                still paints on top of it (see the CSS
+                                comment on .top-stars for the stacking
+                                reasoning). Shares the same .star dots
+                                and starTurn animation as .flag-stars,
+                                just at a density-matched, dynamically-
+                                sized count -- see scatterStars() in
+                                the script.
     1a. .mesh-banner         -- Mesh That Divide promo button, pinned
                                  in the white margin just left of the
                                  flag, vertically centered on it, same
@@ -31,27 +69,54 @@
                                  https://greens.2203.fyi/. Hover state
                                  is linked with the adjacent (next)
                                  arrow, both ways.
-    2. .statusbar             -- bracket nav (TOOLS/SERVICE/SOON). No
-                                 longer anchor-scroll links -- each is a
-                                 button that flies out a side-menu panel
-                                 in the left margin instead (2b). Only
-                                 one panel open at a time; clicking the
-                                 open one's button closes it again.
-    2b. .side-menu            -- one per nav button (#menu-tools,
-                                 #menu-service, #menu-soon), hidden by
-                                 default, positioned in the left margin,
-                                 top edge pinned to the flag's bottom
-                                 edge so it grows downward from the
-                                 flag's bottom-left corner into the open
-                                 margin space below. Content used to
-                                 live inline as <section>s; that's gone
-                                 now, freeing up the frame's middle for
-                                 a future landing-page draft.
+    2. .statusbar             -- bracket nav: SHARE / EQUIP / EMPOWER /
+                                 RECLAIM / EXPECT. Not anchor-scroll
+                                 links -- each is a button that flies
+                                 out a side-menu panel in the left
+                                 margin instead (2b). Only one panel
+                                 open at a time; clicking the open
+                                 one's (ghosted) button closes it again.
+    2b. .side-menu            -- one per nav button (#menu-share,
+                                 #menu-equip, #menu-empower,
+                                 #menu-reclaim, #menu-expect), hidden
+                                 by default, positioned in the left
+                                 margin. Top edge sits a clear 18px
+                                 below the flag's bottom edge -- same
+                                 gap as the statusbar's own margin-top,
+                                 so the block doesn't read as glued to
+                                 the flag. Its own top padding (and the
+                                 header's) is trimmed down to compensate,
+                                 so despite that extra outer gap the
+                                 header text still lands level with the
+                                 nav tab row rather than drifting lower.
+                                 Block carries a blue outline while
+                                 open, matching the ghosted nav
+                                 button's own border -- that's the
+                                 visual pairing between the two. Header
+                                 text is just the plain tab name (e.g.
+                                 "Equip", not "Tools / Downloads") for
+                                 the same reason, and is itself
+                                 clickable -- tapping it closes the
+                                 panel exactly like tapping its ghosted
+                                 nav button does.
+    2c. #centerContent        -- lives in the frame's middle, below the
+                                 statusbar. Side-menu links with a
+                                 data-content attribute render their
+                                 stub straight in here via JS (see
+                                 STUBS in the script) -- no navigation,
+                                 no reload. The mailto link pinned atop
+                                 SHARE's list is the one exception,
+                                 since it should just open the user's
+                                 mail client (it's also styled
+                                 .is-muted -- greyed out, brightens on
+                                 hover/focus). Blog (SHARE's first
+                                 data-content item) renders here by
+                                 default on load.
     3. .page-strip            -- horizontal scrub strip of every page on
                                  the site, lives INSIDE the frame as its
-                                 footer -- not trailing below it on white
+                                 footer -- not trailing below it
     4. main.center-frame     -- the single 640px dark panel wrapping all
-                                 of the above, floating on a plain white
+                                 of the above, floating on the black
                                  page, touching the browser's top/bottom
                                  edge. No content trails below it -- the
                                  page-strip (3) is its last child. Side
@@ -60,9 +125,11 @@
                                  margin-banner (1b), and whichever
                                  side-menu (2b) is open.
     5. <script>              -- PAGES config + arrow nav + strip
-                                 rendering + side-menu toggle logic
+                                 rendering + side-menu toggle logic +
+                                 center-content swap logic
 
-  Swap the placeholder <li> items and hrefs for real links.
+  Swap the placeholder <li> items and hrefs for real links, and flesh
+  out STUBS with real copy as pages get written.
   To add/remove/reorder sibling pages, edit the PAGES array near the
   bottom -- everything else (arrows, strip) derives from it.
   ============================================================
@@ -88,7 +155,7 @@
   html, body {
     margin: 0;
     padding: 0;
-    background: var(--white);
+    background: var(--bg);
     color: var(--ink);
     font-family: var(--mono);
   }
@@ -124,7 +191,7 @@
   .flag {
     position: relative;
     height: 200px;
-    background: linear-gradient(135deg, #000 49.6%, var(--flag-accent, var(--blue)) 50.4%);
+    background: #000;
     border: 1px solid var(--rule);
     display: flex;
     align-items: center;
@@ -133,18 +200,93 @@
     overflow: hidden;
   }
 
-  .flag::after {
-    content: "";
+  /* The diagonal bisection lives on this smaller emblem now, not the
+     full 640px banner -- stretched across the whole width it was a
+     3.2:1 box, giving a diagonal of only ~17deg off horizontal, way
+     shallower than any real flag (which run closer to 30-34deg at
+     typical 2:3/3:5 ratios). 300x200 is a 3:2 ratio -- matching the
+     actual reference anarcho-transhumanist flag SVGs (450x300,
+     384x256, both reduce to 3:2) -- so the diagonal here reads as an
+     actual flag rather than a stretched banner. Height matches
+     .flag's own 200px exactly (top-to-bottom of the banner), so only
+     the width is narrowed; "to bottom right" still does the real
+     corner-to-corner math, same as before, just against this box's
+     own true 3:2 proportions instead of the fluid outer one. Outer
+     .flag is solid black outside it -- the anarchist field color --
+     with the emblem reading as a patch on top, fimbriated in a single
+     white px per the request. */
+  .flag-emblem {
     position: absolute;
-    inset: 0;
-    background: linear-gradient(to bottom, transparent 0%, rgba(79,209,255,0.087) 50%, transparent 100%);
-    background-size: 100% 300%;
-    animation: sweep 6s linear infinite;
+    top: 0;
+    left: 50%;
+    height: 100%;
+    width: 300px;
+    transform: translateX(-50%);
+    background: linear-gradient(to bottom right, var(--flag-accent, var(--blue)) 49.6%, #000 50.4%);
+    border: 1px solid #fff;
+    /* +3px on just the hoist (left) edge -- a real flag's "header" or
+       "heading" is the reinforced canvas sleeve sewn along the hoist
+       side for mounting to a pole, distinct from the rest of the
+       fimbriation. */
+    border-left-width: 4px;
+    z-index: 0;
   }
 
-  @keyframes sweep {
-    0%   { background-position: 0 0%; }
-    100% { background-position: 0 300%; }
+  /* Starfield -- replaces the old scanline-sweep. .flag-stars is the
+     rotating layer (JS populates it with randomly-scattered .star
+     dots on load); the rotation itself simulates the sky's apparent
+     turn as Earth rotates, so the animation-duration below is
+     literally one sidereal day (23h56m4s = 86164s) rather than an
+     arbitrary loop length -- a full, seamless 360deg revolution per
+     real day, which in practice reads as close to motionless during
+     any normal viewing session. */
+  .flag-stars {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    animation: starTurn 86164s linear infinite;
+  }
+  .star {
+    position: absolute;
+    background: #fff;
+    border-radius: 50%;
+  }
+  @keyframes starTurn {
+    to { transform: rotate(360deg); }
+  }
+
+  /* Page-wide starfield -- separate from .flag-stars above, which
+     stays put covering just the 640px banner (behind .flag's own
+     opaque background, so it needs its own local field). This one
+     splays the same effect across the full page width, matching the
+     flag's own height/top position, so it shows through in the black
+     gaps around the flag and the mesh-banner/margin-banner peek cards
+     out to the viewport edges. Lives at the top of <body>, outside
+     .page-shell's 640px column entirely -- width:100% here resolves
+     against the initial containing block (viewport), not page-shell.
+     Placed before .page-shell in the DOM on purpose: since it's
+     position:absolute with z-index:auto, it already paints above any
+     static-positioned content (like .center-frame's own background)
+     regardless of source order, but .flag-wrap (also position:relative,
+     z-index:auto) needs to come AFTER it in the DOM specifically so
+     .flag-wrap's own subtree -- the flag, the peek cards -- paints on
+     top instead of being hidden behind it. Two-layer split (outer
+     .top-stars clips, inner .top-stars-spin rotates) because unlike
+     .flag, there's no ancestor here already providing overflow:hidden
+     to contain the rotation's sweep. */
+  .top-stars {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 200px;
+    overflow: hidden;
+    pointer-events: none;
+  }
+  .top-stars-spin {
+    position: absolute;
+    inset: 0;
+    animation: starTurn 86164s linear infinite;
   }
 
   .flag h1 {
@@ -290,6 +432,15 @@
     width: 214px;
     z-index: 3;
     display: block;
+    /* Solid white backing, independent of the page background. The
+       greensFade animation on the img below only pulses the JPEG's
+       opacity -- without a white backing here, that fade exposes
+       whatever the page background is (previously white, so the
+       JPEG's own white margins vanished into it seamlessly; now the
+       page is black, so this keeps that same seamless-white look
+       instead of the JPEG's white background flickering toward
+       black). */
+    background: var(--white);
     border: 2px solid var(--rule);
     box-shadow: 0 3px 10px rgba(0,0,0,0.22);
     padding: 0;
@@ -378,6 +529,7 @@
   .statusbar {
     margin-top: 18px;
     display: flex;
+    justify-content: center;
     align-items: baseline;
     flex-wrap: wrap;
     gap: 12px;
@@ -403,11 +555,15 @@
   }
   /* is-active first, :hover after -- so a hovered button always shows
      the solid fill, but an open (not currently hovered) menu's button
-     settles into the quieter outline look. */
+     ghosts out -- dim text, but the border stays blue so it still
+     visually pairs with the open side-menu panel (which carries the
+     same blue outline). Clicking it again (still ghosted) is what
+     closes the panel and restores the button to normal. */
   nav.menu button.menu-toggle.is-active {
     background: none;
     border-color: var(--glow);
-    color: var(--glow);
+    color: var(--dim);
+    opacity: 0.6;
   }
   nav.menu button.menu-toggle:hover,
   nav.menu button.menu-toggle:focus-visible {
@@ -419,18 +575,22 @@
   /* Side menus -- one per nav button, flown out into the left margin
      instead of jumping/scrolling to an inline section. Only one is
      ever visible at a time (script toggles the `hidden` attribute).
-     Lives inside .flag-wrap, top edge pinned flush to the flag's own
-     bottom edge -- so it grows downward from the flag's bottom-left
-     corner, into the open margin space below, rather than upward into
-     the flag's own vertical span. */
+     Lives inside .flag-wrap, starting 18px below the flag's own
+     bottom edge -- matching the statusbar's own margin-top so the
+     block reads as clearly separate from the flag rather than glued
+     to it. Its own top padding (and the header's, below) is trimmed
+     to compensate, so the header text still lands level with the nav
+     tab row despite that larger outer gap -- then it grows downward
+     from there into the open margin space below, rather than upward
+     into the flag's own vertical span. */
   .side-menu {
     position: absolute;
     right: 100%;
-    top: 100%;
+    top: calc(100% + 18px);
     width: 260px;
     background: var(--bg);
-    border: 1px solid var(--rule);
-    padding: 14px;
+    border: 1px solid var(--glow);
+    padding: 0 14px 14px;
     z-index: 3;
   }
   .side-menu-header {
@@ -441,7 +601,13 @@
     font-size: 14px;
     font-weight: 400;
     letter-spacing: 0.04em;
-    padding: 4px 10px;
+    padding: 2px 10px 4px;
+    cursor: pointer;
+  }
+  .side-menu-header:hover,
+  .side-menu-header:focus-visible {
+    background: var(--glow);
+    color: var(--bg);
   }
   .side-menu ul.list { margin: 0; padding: 0; }
 
@@ -466,11 +632,45 @@
   ul.list a:hover,
   ul.list a:focus-visible {
     color: var(--glow);
-    text-decoration: underline;
   }
-  #menu-soon li { color: var(--dim); }
+  #menu-expect li { color: var(--dim); }
 
-  /* ---------- 8. frameset-track: single centered panel on white ---------- */
+  /* .is-muted: a single greyed-out list item (currently just the
+     email link pinned to the top of SHARE) rather than a whole
+     dimmed panel like #menu-expect above. Opacity rather than a
+     color override so it doesn't need to fight the ul.list a color
+     rules -- and it un-dims on hover/focus to make clear it's still
+     a live link, not a "coming soon" placeholder. */
+  .side-menu li.is-muted { opacity: 0.5; }
+  .side-menu li.is-muted:hover,
+  .side-menu li.is-muted:focus-within { opacity: 1; }
+
+  /* ---------- 8a. center-content: dynamic pane inside the frame that
+     side-menu links render into. Swapping innerHTML here (instead of
+     navigating) is what makes clicking a link update the frame
+     without a full page reload. SHARE's first data-content item
+     (Blog) is what renders by default on load. */
+  .center-content {
+    padding: 20px 24px 4px;
+  }
+  .center-content h2 {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--white);
+    margin: 0 0 10px;
+    letter-spacing: 0.04em;
+  }
+  .center-content h2::before {
+    content: "> ";
+    color: var(--blue);
+  }
+  .center-content p {
+    margin: 0;
+    font-size: 13px;
+    color: var(--dim);
+  }
+
+  /* ---------- 8. frameset-track: single centered panel ---------- */
   .frameset-track {
     display: flex;
     justify-content: center;
@@ -530,13 +730,14 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .flag::after, .cursor, .margin-banner img { animation: none; }
+    .flag-stars, .top-stars-spin, .cursor, .margin-banner img { animation: none; }
     .frameset-track { scroll-behavior: auto; }
   }
 </style>
 </head>
 
 <body>
+<div class="top-stars" id="topStars" aria-hidden="true"><div class="top-stars-spin" id="topStarsSpin"></div></div>
 <div class="page-shell">
 
   <div class="frameset-track" id="framesetTrack">
@@ -544,6 +745,8 @@
 
         <div class="flag-wrap">
           <div class="flag" id="flagFrame">
+            <div class="flag-emblem" aria-hidden="true"></div>
+            <div class="flag-stars" id="flagStars" aria-hidden="true"></div>
             <button class="flag-arrow flag-arrow--prev" id="prevArrow" title="mtd.2203.fyi" aria-label="Previous page">[ &lsaquo; ]</button>
             <h1><span class="node-leds" title="mesh node status — placeholder, not yet wired"><span class="led led--red led--on"></span><span class="led led--green"></span></span><a class="wordmark-link" href="https://86.2203.fyi/" title="86.2203.fyi">k-NET</a><span class="cursor">&nbsp;</span></h1>
             <p class="flag-subtitle">&lsquo;Eighty-six&rsquo; the gatekeeper</p>
@@ -559,28 +762,46 @@
             <span class="margin-banner-label">Just Greens 🌱</span>
           </a>
 
-          <div class="side-menu" id="menu-tools" hidden>
-            <div class="side-menu-header">Tools / Downloads</div>
+          <div class="side-menu" id="menu-share" hidden>
+            <div class="side-menu-header">Share</div>
             <ul class="list">
-              <li><a href="#">Apps</a></li>
-              <li><a href="#">Firmware</a></li>
-              <li><a href="#">Links</a></li>
+              <li class="is-muted"><a href="mailto:ReusernameTaken@2203.fyi">Reach out!</a></li>
+              <li><a href="#" data-content="blog">Blog</a></li>
+              <li><a href="#" data-content="forum">Forum</a></li>
             </ul>
           </div>
 
-          <div class="side-menu" id="menu-service" hidden>
-            <div class="side-menu-header">You&rsquo;ve Been Served</div>
+          <div class="side-menu" id="menu-equip" hidden>
+            <div class="side-menu-header">Equip</div>
             <ul class="list">
-              <li><a href="#">Rayhunter-Watch.py</a></li>
-              <li><a href="#">k-NET 7400 Meshtastic node</a></li>
-              <li><a href="#">k-NET 7400 WiFi WAN + a Letter — <em>Let&rsquo;s Build a LAN?</em></a></li>
-              <li><a href="#">Message Board</a></li>
+              <li><a href="#" data-content="tools">Tools</a></li>
+              <li><a href="#" data-content="apps">Apps</a></li>
+              <li><a href="#" data-content="downloads">Downloads</a></li>
+              <li><a href="#" data-content="lessons">Lessons</a></li>
             </ul>
           </div>
 
-          <div class="side-menu" id="menu-soon" hidden>
-            <div class="side-menu-header">Coming Soon&hellip;</div>
+          <div class="side-menu" id="menu-empower" hidden>
+            <div class="side-menu-header">Empower</div>
             <ul class="list">
+              <li><a href="#" data-content="lora">LoRa Repeater Node</a></li>
+              <li><a href="#" data-content="localwifi">Local WiFi</a></li>
+              <li><a href="#" data-content="rayhunter">Rayhunter Alert</a></li>
+            </ul>
+          </div>
+
+          <div class="side-menu" id="menu-reclaim" hidden>
+            <div class="side-menu-header">Reclaim</div>
+            <ul class="list">
+              <li><a href="#" data-content="philosophy">Philosophy?</a></li>
+              <li><a href="#" data-content="mission">Mission Statement</a></li>
+            </ul>
+          </div>
+
+          <div class="side-menu" id="menu-expect" hidden>
+            <div class="side-menu-header">Expect</div>
+            <ul class="list">
+              <li>Coming soon&hellip;</li>
               <li>FTP://</li>
             </ul>
           </div>
@@ -588,11 +809,15 @@
 
         <div class="statusbar">
           <nav class="menu">
-            <button type="button" class="menu-toggle" data-menu="tools">[ TOOLS ]</button>
-            <button type="button" class="menu-toggle" data-menu="service">[ SERVICE ]</button>
-            <button type="button" class="menu-toggle" data-menu="soon">[ SOON ]</button>
+            <button type="button" class="menu-toggle" data-menu="share">[ SHARE ]</button>
+            <button type="button" class="menu-toggle" data-menu="equip">[ EQUIP ]</button>
+            <button type="button" class="menu-toggle" data-menu="empower">[ EMPOWER ]</button>
+            <button type="button" class="menu-toggle" data-menu="reclaim">[ RECLAIM ]</button>
+            <button type="button" class="menu-toggle" data-menu="expect">[ EXPECT ]</button>
           </nav>
         </div>
+
+        <div class="center-content" id="centerContent"></div>
 
         <nav class="page-strip" id="pageStrip" aria-label="Site pages"></nav>
 
@@ -637,6 +862,45 @@
   var flag = document.getElementById('flagFrame');
   if (flag) flag.style.setProperty('--flag-accent', PAGES[idx].theme);
 
+  // ---- star scatter: shared by both starfields (.flag-stars inside
+  // the flag, .top-stars-spin spanning the page). Percentage-based
+  // left/top (not the box-shadow-on-one-element trick) on purpose --
+  // box-shadow offsets can't be percentages, and both containers are
+  // fluid-width with a fixed height, so pixel offsets would drift out
+  // of position on resize. Each container rotates in CSS (see
+  // @keyframes starTurn) at one revolution per sidereal day.
+  function scatterStars(container, count) {
+    if (!container) return;
+    var frag = document.createDocumentFragment();
+    for (var s = 0; s < count; s++) {
+      var star = document.createElement('span');
+      star.className = 'star';
+      star.style.left = (Math.random() * 100).toFixed(2) + '%';
+      star.style.top = (Math.random() * 100).toFixed(2) + '%';
+      var size = Math.random() < 0.15 ? 2 : 1;
+      star.style.width = size + 'px';
+      star.style.height = size + 'px';
+      star.style.opacity = (0.25 + Math.random() * 0.6).toFixed(2);
+      frag.appendChild(star);
+    }
+    container.appendChild(frag);
+  }
+
+  // .flag-stars: fixed count, matches the flag's own fixed 640x200
+  // reference size this density was tuned against.
+  scatterStars(document.getElementById('flagStars'), 70);
+
+  // .top-stars-spin: same density (70 per 640x200 = 0.000547/px²),
+  // scaled to however wide the page actually renders at load, so the
+  // wider band doesn't look sparser than the flag's own field.
+  var topStarsEl = document.getElementById('topStars');
+  var topStarsSpinEl = document.getElementById('topStarsSpin');
+  if (topStarsEl && topStarsSpinEl) {
+    var density = 70 / (640 * 200);
+    var topCount = Math.round(density * topStarsEl.clientWidth * topStarsEl.clientHeight);
+    scatterStars(topStarsSpinEl, topCount);
+  }
+
   function wrap(i) { return (i + PAGES.length) % PAGES.length; }
 
   function nearestLive(fromIndex, dir) {
@@ -671,9 +935,10 @@
     active.scrollIntoView({ inline: 'center', block: 'nearest' });
   }
 
-  // ---- left-margin side menus: TOOLS / SERVICE / SOON fly out a
-  // panel instead of scrolling to an inline section. One open at a
-  // time; clicking the currently-open button closes it.
+  // ---- left-margin side menus: SHARE / EQUIP / EMPOWER / RECLAIM /
+  // EXPECT fly out a panel instead of scrolling to an inline section.
+  // One open at a time; clicking the currently-open (ghosted) button
+  // closes it and restores the page to normal.
   var menuButtons = document.querySelectorAll('.menu-toggle');
   menuButtons.forEach(function (btn) {
     btn.addEventListener('click', function () {
@@ -692,6 +957,67 @@
       }
     });
   });
+
+  // Tapping an expanded panel's own header closes it too, exactly as
+  // if its ghosted nav button were tapped -- literally reuses that
+  // button's click handler above rather than duplicating the
+  // close logic, so the two stay in sync automatically.
+  document.querySelectorAll('.side-menu').forEach(function (panel) {
+    var header = panel.querySelector('.side-menu-header');
+    if (!header) return;
+    header.setAttribute('role', 'button');
+    header.setAttribute('tabindex', '0');
+    header.addEventListener('click', function () {
+      var btn = document.querySelector('.menu-toggle[data-menu="' + panel.id.replace('menu-', '') + '"]');
+      if (btn) btn.click();
+    });
+    header.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        header.click();
+      }
+    });
+  });
+
+  // ---- center-content: side-menu links with data-content (i.e. not
+  // the muted mailto link atop SHARE, and not EXPECT's plain-text
+  // placeholders) render straight into the frame's middle
+  // instead of navigating anywhere -- no page reload, no network
+  // fetch. Real copy goes in STUBS below as pages get written; for
+  // now each one is a placeholder so the swap mechanic is there to
+  // build on. Blog (SHARE's first data-content item) renders by
+  // default on load, standing in for "what the index page first
+  // presents" until there's a real landing draft to put here instead.
+  var STUBS = {
+    blog:       { title: 'Blog',                 body: 'Field notes and dispatches from the network. Content coming soon.' },
+    forum:      { title: 'Forum',                 body: 'Open discussion board for k-NET and friends. Content coming soon.' },
+    philosophy: { title: 'Philosophy?',            body: 'Why local-first, why offline-capable, why this at all. Content coming soon.' },
+    mission:    { title: 'Mission Statement',      body: 'What k-NET is actually for. Content coming soon.' },
+    tools:      { title: 'Tools',                 body: 'Hardware and software in active use across the network. Content coming soon.' },
+    apps:       { title: 'Apps',                   body: 'Recommended apps for mesh comms, local services, and privacy. Content coming soon.' },
+    downloads:  { title: 'Downloads',             body: 'Firmware, configs, and installers. Content coming soon.' },
+    lessons:    { title: 'Lessons',               body: 'Guides and writeups from getting this stuff working. Content coming soon.' },
+    lora:       { title: 'LoRa Repeater Node',     body: 'Node status and setup notes. Content coming soon.' },
+    localwifi:  { title: 'Local WiFi',             body: 'k-NET 7400 access details. Content coming soon.' },
+    rayhunter:  { title: 'Rayhunter Alert',        body: 'IMSI-catcher detection status and alert pipeline. Content coming soon.' }
+  };
+  var DEFAULT_CONTENT = 'blog';
+
+  function renderContent(key) {
+    var data = STUBS[key];
+    var el = document.getElementById('centerContent');
+    if (!data || !el) return;
+    el.innerHTML = '<h2>' + data.title + '</h2><p>' + data.body + '</p>';
+  }
+
+  document.querySelectorAll('.side-menu a[data-content]').forEach(function (link) {
+    link.addEventListener('click', function (e) {
+      e.preventDefault();
+      renderContent(link.dataset.content);
+    });
+  });
+
+  renderContent(DEFAULT_CONTENT);
 })();
 </script>
 </body>

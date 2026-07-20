@@ -217,19 +217,39 @@
      white px per the request. */
   .flag-emblem {
     position: absolute;
-    top: 0;
+    /* top+bottom insets (not top:0/height:100%) so the emblem stands
+       clear of .flag's own top and bottom edges with equal margins,
+       rather than stretching edge-to-edge -- 10px each side leaves it
+       reading as its own standalone patch, 200-20=180px tall. Width
+       is recalculated from that (180*1.5=270) to hold the 3:2 ratio;
+       shrinking height without also shrinking width would distort the
+       diagonal off its real proportions. */
+    /* 9px, not 10 -- these insets are measured from .flag's padding
+       edge, which already sits 1px in from its own border. 1+9=10px
+       clear from the flag's true outer edge, landing height at
+       exactly 198-9-9=180px (270/180 = 1.5 = true 3:2, not the
+       178px/1.517 a flat 10px would've given). */
+    top: 9px;
+    bottom: 9px;
     left: 50%;
-    height: 100%;
-    width: 300px;
+    width: 270px;
     transform: translateX(-50%);
     background: linear-gradient(to bottom right, var(--flag-accent, var(--blue)) 49.6%, #000 50.4%);
     border: 1px solid #fff;
-    /* +3px on just the hoist (left) edge -- a real flag's "header" or
+    /* +2px on just the hoist (left) edge -- a real flag's "header" or
        "heading" is the reinforced canvas sleeve sewn along the hoist
        side for mounting to a pole, distinct from the rest of the
        fimbriation. */
-    border-left-width: 4px;
-    z-index: 0;
+    border-left-width: 3px;
+    /* Above .flag-stars (z-index:0 below) rather than under it -- the
+       emblem is the flag itself, closer to the viewer than the stars
+       behind it; stars should only show through .flag's black field
+       around the emblem, not sprinkle across the emblem's own face.
+       Distinct from the wordmark/arrows' own z-index:2 on purpose --
+       three clear layers (stars 0, emblem 1, wordmark/arrows 2)
+       rather than tying the emblem to the text layer and leaning on
+       DOM order to break the tie. */
+    z-index: 1;
   }
 
   /* Starfield -- replaces the old scanline-sweep. .flag-stars is the
@@ -243,7 +263,7 @@
   .flag-stars {
     position: absolute;
     inset: 0;
-    z-index: 1;
+    z-index: 0;
     animation: starTurn 86164s linear infinite;
   }
   .star {
@@ -295,7 +315,7 @@
     margin: 0;
     text-align: center;
     color: var(--white);
-    font-size: clamp(36px, 9.5vw, 54px);
+    font-size: clamp(35px, 8.5vw, 53px);
     font-weight: 700;
     letter-spacing: 0.12em;
     text-shadow: 0 0 12px rgba(255,255,255,0.35);
@@ -354,7 +374,7 @@
     color: var(--white);
     font-weight: 700;
     font-style: normal;
-    font-size: 15px;
+    font-size: 14px;
     letter-spacing: 0.03em;
     text-shadow: 0 0 8px rgba(255,255,255,0.25);
   }
@@ -763,7 +783,7 @@
           </a>
 
           <div class="side-menu" id="menu-share" hidden>
-            <div class="side-menu-header">Share</div>
+            <div class="side-menu-header"><em>Share</em></div>
             <ul class="list">
               <li class="is-muted"><a href="mailto:ReusernameTaken@2203.fyi">Reach out!</a></li>
               <li><a href="#" data-content="blog">Blog</a></li>
@@ -809,7 +829,7 @@
 
         <div class="statusbar">
           <nav class="menu">
-            <button type="button" class="menu-toggle" data-menu="share">[ SHARE ]</button>
+            <button type="button" class="menu-toggle" data-menu="share">[ <em>SHARE</em> ]</button>
             <button type="button" class="menu-toggle" data-menu="equip">[ EQUIP ]</button>
             <button type="button" class="menu-toggle" data-menu="empower">[ EMPOWER ]</button>
             <button type="button" class="menu-toggle" data-menu="reclaim">[ RECLAIM ]</button>

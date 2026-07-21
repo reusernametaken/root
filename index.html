@@ -28,17 +28,22 @@
                                 angle so it's a true corner-to-corner
                                 line off the emblem's own true 3:2
                                 proportions, fimbriated in 1px white --
-                                4px on the hoist (left) edge specifically,
-                                standing in for a real flag's "header"/
-                                "heading", the reinforced sleeve sewn
-                                along the hoist for mounting to a pole.
+                                --hoist-width (4px) on the hoist (left)
+                                edge specifically, standing in for a
+                                real flag's "header"/"heading", the
+                                reinforced sleeve sewn along the hoist
+                                for mounting to a pole.
                                 .flag itself is solid black outside it.
                                 .flag-stars is a JS-scattered field of
-                                .star dots layered over both (z-index:1,
-                                under the wordmark/arrows at z-index:2,
-                                over the emblem at z-index:0), rotating
-                                one full turn per sidereal day -- see
-                                the CSS and script for all three layers.
+                                .star dots layered under both the
+                                emblem (z-index:1) and the wordmark/
+                                arrows (z-index:2) at z-index:0 --
+                                closer to the viewer than the stars,
+                                which only show through .flag's black
+                                field around the emblem, not across its
+                                face -- rotating one full turn per
+                                sidereal day. See the CSS and script
+                                for all three layers.
     0. .top-stars            -- a second, wider starfield living at the
                                 top of <body>, outside .page-shell
                                 entirely, spanning the full page width
@@ -147,6 +152,11 @@
     --glow:      #4fd1ff;
     --slate:     #708090;
     --rule:      #22262c;
+    /* .flag-emblem's hoist border width. Not shared with the node
+       LEDs anymore -- tying LED size to this was a wrong guess at
+       what "aligning the LEDs vertically" meant; the LEDs stay their
+       own 8px regardless of what this is set to. */
+    --hoist-width: 4px;
     --mono: 'Courier New', ui-monospace, 'SFMono-Regular', Consolas, monospace;
   }
 
@@ -236,11 +246,10 @@
     transform: translateX(-50%);
     background: linear-gradient(to bottom right, var(--flag-accent, var(--blue)) 49.6%, #000 50.4%);
     border: 1px solid #fff;
-    /* +2px on just the hoist (left) edge -- a real flag's "header" or
-       "heading" is the reinforced canvas sleeve sewn along the hoist
-       side for mounting to a pole, distinct from the rest of the
-       fimbriation. */
-    border-left-width: 3px;
+    /* --hoist-width: a real flag's "header" or "heading" is the
+       reinforced canvas sleeve sewn along the hoist side for mounting
+       to a pole, distinct from the rest of the fimbriation. */
+    border-left-width: var(--hoist-width);
     /* Above .flag-stars (z-index:0 below) rather than under it -- the
        emblem is the flag itself, closer to the viewer than the stars
        behind it; stars should only show through .flag's black field
@@ -340,9 +349,15 @@
   /* mesh node status LEDs -- placeholder pair, not wired to anything
      yet. Red is on by default (dumb default -- no script means
      "unknown/not confirmed live", flagged red until real telemetry
-     exists). Add/remove .led--on to flip which one is lit. */
+     exists). Add/remove .led--on to flip which one is lit. Stacked
+     vertically (green above red) rather than side by side -- their
+     own 8px size is unrelated to .flag-emblem's --hoist-width, which
+     just happens to also be 4px right now; an earlier pass wrongly
+     tied the two together and the LEDs read as too dim shrunk down to
+     match, so that link's gone. */
   .node-leds {
     display: inline-flex;
+    flex-direction: column;
     gap: 5px;
     margin-right: 12px;
     vertical-align: middle;
@@ -768,7 +783,7 @@
             <div class="flag-emblem" aria-hidden="true"></div>
             <div class="flag-stars" id="flagStars" aria-hidden="true"></div>
             <button class="flag-arrow flag-arrow--prev" id="prevArrow" title="mtd.2203.fyi" aria-label="Previous page">[ &lsaquo; ]</button>
-            <h1><span class="node-leds" title="mesh node status — placeholder, not yet wired"><span class="led led--red led--on"></span><span class="led led--green"></span></span><a class="wordmark-link" href="https://86.2203.fyi/" title="86.2203.fyi">k-NET</a><span class="cursor">&nbsp;</span></h1>
+            <h1><span class="node-leds" title="mesh node status — placeholder, not yet wired"><span class="led led--green"></span><span class="led led--red led--on"></span></span><a class="wordmark-link" href="https://86.2203.fyi/" title="86.2203.fyi">k-NET</a><span class="cursor">&nbsp;</span></h1>
             <p class="flag-subtitle">&lsquo;Eighty-six&rsquo; the gatekeeper</p>
             <button class="flag-arrow flag-arrow--next" id="nextArrow" title="greens.2203.fyi" aria-label="Next page">[ &rsaquo; ]</button>
           </div>
